@@ -1,2 +1,3 @@
-# mazout
-This website shows the fuel price for a lot of differents vehicles in Dijon.
+# mazout.studio
+Fuel prices, combined with fuel consumptions of cars&nbsp;!  
+Under development.
