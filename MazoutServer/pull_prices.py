@@ -12,7 +12,7 @@ from . import logger
 
 def pull_prices_thread():
     while True:
-        sleep(10)  # pulled every 5 minutes
+        sleep(300)  # pulled every 5 minutes
         pull_prices()
 
 
@@ -56,7 +56,7 @@ def pull_prices(init: bool = False) -> None:
                     elif attr.tag == "prix":
                         st_data["fuels"].append({
                             "fuel": attr.attrib["nom"],
-                            "price": attr.attrib["valeur"]
+                            "price": float(attr.attrib["valeur"])
                         })
                 for attr in ["address", "city"]:
                     if attr not in st_data.keys():
