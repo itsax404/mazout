@@ -24,7 +24,7 @@ def main() -> None:
     if platform.system() == "Windows":
         from waitress import serve
         serve(app,host="0.0.0.0", port=9678)
-    elif platform.system() == "Linux": # Maybe test with "Java" and MacOS ("Darwin") for the compatibilty of bjoern
+    elif platform.system() == "Linux" or platform.system() == "Darwin": # Maybe test with "Java" for the compatibilty of bjoern
         from bjoern import run
 
         run(app, "0.0.0.0", 9678)
