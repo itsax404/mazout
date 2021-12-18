@@ -27,6 +27,8 @@ def pull_prices(init: bool = False) -> None:
         stations = ElementTree.parse("./data/PrixCarburants_instantane.xml").getroot()
         client = MongoClient("127.0.0.1").mazout
         if init:
+            client.static.delete_many({"field": "fuel_db_id"})
+            client.static.insert({"field": "fuel_db_id"})
             db = client.fuelPrices1
         else:
             fuel_db_id = list(client.static.find({"field": "fuel_db_id"}))
