@@ -53,6 +53,7 @@ def pull_prices(init: bool = False) -> None:
                         st_data["address"] = attr.text
                     elif attr.tag == "ville":
                         st_data["city"] = attr.text
+                        st_data["cityNMLZ"] = attr.text.lower().replace('-', ' ')
                     elif attr.tag == "horaires":
                         st_data["24-24"] = False if attr.attrib["automate-24-24"] == "0" else True
                     elif attr.tag == "prix":
