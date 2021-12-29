@@ -12,6 +12,6 @@ co2_data = loads(json_content)
 i = 0
 
 for element in co2_data:
-    db.insert(element)
+    db.insert(element["fields"])
     i += 1
     print(f"Inserted {i} elements into database.")
