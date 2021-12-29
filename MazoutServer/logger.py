@@ -1,3 +1,5 @@
+"""This is the logging system."""
+
 from sys import stderr
 from . import __version__
 from time import time

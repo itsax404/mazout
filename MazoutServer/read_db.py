@@ -1,3 +1,5 @@
+"""These functions are used to read the database."""
+
 from pymongo import MongoClient
 
 client = MongoClient("127.0.0.1").mazout
@@ -13,3 +15,9 @@ def get_stations_by_town_name(town_name: str) -> list:
     db = client.fuelPrices1 if list(client.static.find({"field": "fuel_db_id"}))[0]["value"] == 1 \
         else client.fuelPrices2
     return list(db.find({"cityNMLZ": town_name.lower().replace('-', ' ')}))
+
+
+def get_stations_by_dept_code(dept_code: str) -> list:
+    db = client.fuelPrices1 if list(client.static.find({"field": "fuel_db_id"}))[0]["value"] == 1 \
+        else client.fuelPrices2
+    return list(db.find({"postalCode": {"$regex": f"{dept_code}..."}}))

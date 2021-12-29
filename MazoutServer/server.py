@@ -1,6 +1,6 @@
 """This is the Flask app."""
 
-from flask import Flask
+from flask import Flask, Response
 from threading import Thread
 from .pull_prices import pull_prices, pull_prices_thread
 
@@ -12,7 +12,7 @@ Thread(target=pull_prices_thread).start()
 
 
 @app.route("/ping/")
-def ping():
+def ping() -> Response:
     return "pong", 200
 
 

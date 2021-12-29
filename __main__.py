@@ -3,6 +3,7 @@
 from sys import argv
 import platform
 
+
 def main() -> None:
     """The actual entry point."""
 
