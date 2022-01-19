@@ -23,8 +23,8 @@ def pull_prices(init: bool = False) -> None:
         if response.status_code != 200:
             raise Exception("Response status code is not 200.")
         zipfile = ZipFile(BytesIO(response.content))
-        zipfile.extractall(path="./data")
-        stations = ElementTree.parse("./data/PrixCarburants_instantane.xml").getroot()
+        zipfile.extractall(path="./datas")
+        stations = ElementTree.parse("./datas/PrixCarburants_instantane.xml").getroot()
         client = MongoClient("127.0.0.1").mazout
         if init:
             client.static.delete_many({"field": "fuel_db_id"})
