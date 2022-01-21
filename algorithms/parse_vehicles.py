@@ -88,7 +88,7 @@ class Voiture:
 def download_and_unzip(url_website):
     http_response = requests.get(url_website)
     zipfile = ZipFile(BytesIO(http_response.content))
-    zipfile.extractall(path=".././datas")
+    zipfile.extractall(path=".././data")
 
 
 def filter_and_add_cars():
@@ -96,7 +96,7 @@ def filter_and_add_cars():
     """
     This function filters same cars and add cars to the database
     """
-    file = open(".././datas/fic_etiq_edition_40-mars-2015.csv", "r")
+    file = open(".././data/fic_etiq_edition_40-mars-2015.csv", "r")
 
     csv_reader = csv.reader(file, delimiter=";")
 
