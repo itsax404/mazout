@@ -3,7 +3,6 @@
 from sys import argv
 import platform
 
-
 def main() -> None:
     """The actual entry point."""
 
@@ -24,8 +23,8 @@ def main() -> None:
 
     if platform.system() == "Windows":
         from waitress import serve
-        serve(app,host="0.0.0.0", port=9678)
-    elif platform.system() == "Linux" or platform.system() == "Darwin": # Maybe test with "Java" for the compatibilty of bjoern
+        serve(app, host="0.0.0.0", port=9678)
+    elif platform.system() == "Linux" or platform.system() == "Darwin":
         from bjoern import run
 
         run(app, "0.0.0.0", 9678)

@@ -3,14 +3,16 @@
 from flask import Flask, Response
 from threading import Thread
 from .pull_prices import pull_prices, pull_prices_thread
-from .algorithms import parse_vehicles
+from .parse_vehicles import pull_cars
 
 app = Flask(__name__)
 
+pull_cars()
+
 pull_prices(init=True)
-parse_vehicles.pull_cars()
 
 Thread(target=pull_prices_thread).start()
+
 
 @app.route("/ping/")
 def ping() -> Response:

@@ -1,16 +1,16 @@
 """Parse the following dataset : https://static.data.gouv.fr/resources/emissions-de-co2-et-de-polluants-des-vehicules-commercialises-en-france/20151015-121340/fic_etiq_edition_40-mars-2015.zip"""
 import dataclasses
 from pymongo import MongoClient
-import csv
-import requests
+from csv import reader
+from requests import get
 from io import BytesIO
 from zipfile import ZipFile
 import os.path
+from . import logger
 
 
 @dataclasses.dataclass
 class Voiture:
-
     """
     """
     marque: str
@@ -30,8 +30,8 @@ class Voiture:
     consommation_mixte: float
     emissions_co2_mixte: float
     emissions_co_type_1: float
-    emissions_hc : float
-    emissions_nox : float
+    emissions_hc: float
+    emissions_nox: float
     emissions_hc_nox: float
     emissions_particules: float
     masse_minimale: int
@@ -46,7 +46,12 @@ class Voiture:
         if isinstance(other, Voiture):
             if other.description_commerciale != self.description_commerciale:
                 return False
-            return (other.puissance_administrative == self.puissance_administrative) and (other.puissance_heure == self.puissance_heure) and (self.puissance_maximale == other.puissance_maximale) and (self.consommation_urbaine == other.consommation_urbaine) and (self.consommation_extra_urbaine == other.consommation_extra_urbaine)and (self.consommation_mixte == other.consommation_mixte)            
+            return (other.puissance_administrative == self.puissance_administrative) and (
+                        other.puissance_heure == self.puissance_heure) and (
+                               self.puissance_maximale == other.puissance_maximale) and (
+                               self.consommation_urbaine == other.consommation_urbaine) and (
+                               self.consommation_extra_urbaine == other.consommation_extra_urbaine) and (
+                               self.consommation_mixte == other.consommation_mixte)
         return False
 
     def __repr__(self) -> str:
@@ -75,7 +80,7 @@ class Voiture:
                 "emissions_co2_mixte": self.emissions_co2_mixte,
                 "emissions_co_type_1": self.emissions_co_type_1,
                 "emissions_hc ": self.emissions_hc,
-                "emissions_nox ":self.emissions_nox,
+                "emissions_nox ": self.emissions_nox,
                 "emissions_hc_nox": self.emissions_hc_nox,
                 "emissions_particules": self.emissions_particules,
                 "masse_minimale": self.masse_minimale,
@@ -85,47 +90,72 @@ class Voiture:
                 }
         return data
 
+
 def download_and_unzip(url_website):
-    http_response = requests.get(url_website)
+    http_response = get(url_website)
     zipfile = ZipFile(BytesIO(http_response.content))
-    zipfile.extractall(path=".././data")
+    zipfile.extractall(path="./data")
 
 
-def filter_and_add_cars():
-    
+def filter_and_add_cars() -> dict:
     """
     This function filters same cars and add cars to the database
     """
-    file = open(".././data/fic_etiq_edition_40-mars-2015.csv", "r")
+    with open("./data/fic_etiq_edition_40-mars-2015.csv", "r", encoding='ISO-8859-1') as file:
+        csv_reader = reader(file, delimiter=";")
 
-    csv_reader = csv.reader(file, delimiter=";")
+        cars = list()
+        variants = list()
+        cars_by_variants = dict()
 
-    voitures = list()
-    variantes = list()
-    voitures_par_variantes = dict()
+        for line in csv_reader:
+            if not line[0] == "lib_mrq_doss":
+                for i in range(len(line)):
+                    element = line[i]
+                    if len(element) != 0:
+                        if element[-1] == " ":
+                            line[i] = element[:-1]
 
-    for line in csv_reader:
-        if not line[0] == "lib_mrq_doss":
-            for i in range(len(line)):
-                element = line[i]
-                if(len(element) != 0):
-                    if element[-1] == " ":
-                        line[i] = element[:-1]
-
-            infos_boite = line[12].split(" ")
-            type_boite = infos_boite[0]
-            nb_rapports = int(infos_boite[1]) if infos_boite[1] != "." else 0
-            voiture = Voiture(line[0], line[1], line[4], line[5], line[6], line[7], True if line[8]=="oui" else False, int(line[9]), float(line[10]) if line[10] != "" else 0, 0 if line[11] == "" else float(line[11]), type_boite, nb_rapports, float(line[13]) if line[13] != "" else 0.0, float(line[14]) if line[14] != "" else 0.0, float(line[15]) if line[15] != "" else 0.0, float(line[16]) if line[16] != "" else 0.0, float(line[17]) if line[17] != "" else 0.0, float(line[18]) if line[18] != "" else 0.0, float(line[19]) if line[19] != "" else 0.0, float(line[20]) if line[20] != "" else 0.0, float(line[21]) if line[21] != "" else 0.0, int(line[22]), int(line[23]),line[24], line[25])
-            if not voiture in voitures:
-                voitures.append(voiture)
-                variantes.append(voiture.type_variante)
-                voitures_par_variantes[voiture.type_variante] = voiture    
+                gearbox_details = line[12].split(" ")
+                type_of_gearbox = gearbox_details[0]
+                number_of_speeds = int(gearbox_details[1]) if gearbox_details[1] != "." else 0
+                car = Voiture(line[0], line[1], line[4], line[5], line[6], line[7], True if line[8] == "oui" else False,
+                              int(line[9]), float(line[10]) if line[10] != "" else 0,
+                              0 if line[11] == "" else float(line[11]), type_of_gearbox, number_of_speeds,
+                              float(line[13]) if line[13] != "" else 0.0, float(line[14]) if line[14] != "" else 0.0,
+                              float(line[15]) if line[15] != "" else 0.0, float(line[16]) if line[16] != "" else 0.0,
+                              float(line[17]) if line[17] != "" else 0.0, float(line[18]) if line[18] != "" else 0.0,
+                              float(line[19]) if line[19] != "" else 0.0, float(line[20]) if line[20] != "" else 0.0,
+                              float(line[21]) if line[21] != "" else 0.0, int(line[22]), int(line[23]), line[24], line[25])
+                if car not in cars:
+                    cars.append(car)
+                    variants.append(car.type_variante)
+                    cars_by_variants[car.type_variante] = car
 
     database = MongoClient("127.0.0.1").mazout
+    database.co2Data.rename("co2Data_old")
     collection = database.co2Data
-    for variante, voiture in voitures_par_variantes.items():
-        collection.insert_one(voiture.get_json_data())
+    try:
+        for variant, car in cars_by_variants.items():
+            collection.insert_one(car.get_json_data())
+        database.co2Data_old.drop()
+        return {"status": True}
+    except Exception as e:
+        database.co2Data.drop()
+        database.co2Data_old.rename("co2Data")
+        return {"status": False, "exception": str(e)}
+
+
 def pull_cars():
-    if(not os.path.isfile("fic_etiq_edition_40-mars-2015.csv")):
-        download_and_unzip("https://static.data.gouv.fr/resources/emissions-de-co2-et-de-polluants-des-vehicules-commercialises-en-france/20151015-121340/fic_etiq_edition_40-mars-2015.zip")
-        filter_and_add_cars()
+    logger.log("Trying to parse cars...")
+    url_to_pull = "https://static.data.gouv.fr/resources/emissions-de-co2-et-de-polluants-des-vehicules-commercialises-en-france/20151015-121340/fic_etiq_edition_40-mars-2015.zip"
+    # try:
+    if not os.path.isfile("fic_etiq_edition_40-mars-2015.csv"):
+        download_and_unzip(url_to_pull)
+        status = filter_and_add_cars()
+        if status["status"]:
+            logger.log("Successfully parsed cars.")
+        else:
+            logger.log_err("Cars not parsed. Using data already in the db. Exception : " + status["exception"])
+    # except Exception as e:
+        # logger.log_err("Cars not parsed. Using data already in the db. Exception : " + str(e))
